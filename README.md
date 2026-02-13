@@ -1,95 +1,298 @@
 
-# prodigyinfotechtask2-
-explanation:
-This code performs sentiment analysis on a dataset of tweets, utilizing a Decision Tree Classifier to predict the sentiment based on the text of the tweets. Here's a detailed breakdown of each step:
+# 💬 Sentiment Analysis Web Application
 
-1. Import Required Libraries
-The necessary libraries for data handling, vectorization, and machine learning are imported:
+This project is a full-stack Machine Learning web application that predicts whether a given text expresses **Positive or Negative sentiment**.
 
-pandas for handling data in DataFrame format.
-numpy for numerical computations.
-matplotlib.pyplot for any future visualization.
-sklearn tools for machine learning, including:
-DecisionTreeClassifier for the model.
-LabelEncoder for encoding target labels.
-TfidfVectorizer for converting text data into a numerical matrix.
-train_test_split for splitting the data into training and testing sets.
-accuracy_score to evaluate model performance.
-2. Load and Inspect Data
-CSV File: The dataset is loaded from a remote CSV file hosted on GitHub using pandas.read_csv().
-df.head(5): Displays the first 5 rows of the dataset.
-df.columns & df.info(): Provides information about the columns and dataset structure, like missing values and data types.
-3. Data Cleaning
-The columns of interest (columns 2 and 3, which likely represent the sentiment and tweet text) are selected using df[[2,3]].
-Reset Index: The index is reset after the column selection.
-The selected columns are renamed to ['Sentiment', 'Text'].
-Drop Missing Values: Rows with missing text values are dropped.
-Fill Missing Text: Any remaining missing values in the Text column are filled with an empty string ('').
-4. Prepare Input and Output Data
-Input Data: input_data is the tweet text, which will be used to predict the sentiment.
-Output Data: output_data contains the sentiment labels, which are the target values for classification.
-5. TF-IDF Vectorization
-TfidfVectorizer: Converts the textual data into numerical features using the Term Frequency-Inverse Document Frequency (TF-IDF) method. The max_features=5000 limits the vector size to 5000 features.
-tfidf.fit_transform(): The Text column is transformed into a numerical matrix using the TF-IDF approach.
-6. Label Encoding
-LabelEncoder: Encodes the sentiment labels (e.g., negative, neutral, positive) as numeric values.
-7. Train-Test Split
-The data is split into training and testing sets using an 80-20 ratio (test_size=0.2) with a random state of 42 for reproducibility.
-8. Train Decision Tree Classifier
-A Decision Tree Classifier model is instantiated and trained on the training set (X_train and y_train).
-9. Model Evaluation
-Prediction: The trained model predicts the sentiments on the test data.
-Accuracy Score: The accuracy of the model is calculated using accuracy_score(), which compares the predicted sentiments (y_pred) with the actual sentiments (y_test).
-10. Predict User Input Sentiment
-Input Transformation: The TF-IDF vectorizer is used to transform a new user input (e.g., "very happy to see u") into the appropriate numeric format.
-Sentiment Prediction: The trained Decision Tree model predicts the sentiment of the user input.
-Label Decoding: The numeric prediction is transformed back into the corresponding sentiment label using inverse_transform().
+It integrates:
 
-Code:
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as mp
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import LabelEncoder
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+* Python for Machine Learning
+* Natural Language Processing (NLP) techniques
+* Support Vector Machine (SVM) classifier
+* Flask REST API for backend
+* React for frontend user interface
 
-# Load the dataset
-df = pd.read_csv("https://raw.githubusercontent.com/laxmimerit/All-CSV-ML-Data-Files-Download/master/twitter_sentiment.csv", header=None, index_col=0)
-df = df[[2, 3]].reset_index(drop=True)  # Select relevant columns and reset index
-df.columns = ['Sentiment', 'Text']  # Rename columns
-df = df.dropna(subset=['Text'])  # Drop rows with missing Text
-df['Text'] = df['Text'].fillna('')  # Fill any remaining missing text with empty string
+The system takes user input text and returns a real-time sentiment prediction through a web interface.
 
-# Prepare input and output data
-input_data = df.drop(columns=['Sentiment'])
-output_data = df['Sentiment']
 
-# TF-IDF Vectorization
-tfidf = TfidfVectorizer(max_features=5000)  # Max 5000 features
-X = tfidf.fit_transform(input_data['Text'])  # Convert text to numeric vectors
+# 📂 Project Architecture
 
-# Label Encoding for Sentiment
-label = LabelEncoder()
-y = label.fit_transform(output_data)  # Convert sentiment to numeric
+The project is structured into two main components:
 
-# Train-Test Split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+### 1️⃣ Backend
 
-# Train Decision Tree Classifier
-model = DecisionTreeClassifier()
-model.fit(X_train, y_train)
+* Loads trained model and vectorizer
+* Exposes REST API endpoint
+* Handles prediction requests
+* Returns JSON response
 
-# Make Predictions and Calculate Accuracy
-y_pred = model.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-print("Accuracy:", accuracy)
+### 2️⃣ Frontend
 
-# Predict sentiment for user input
-user_input_transformed = tfidf.transform(['very happy to see u'])  # Transform new input
-predicted_sentiment_numeric = model.predict(user_input_transformed)
-predicted_sentiment_label = label.inverse_transform(predicted_sentiment_numeric)  # Decode prediction
-print("Predicted Sentiment:", predicted_sentiment_label)
-![image](https://github.com/user-attachments/assets/7ecea31f-a0ac-4402-bcbf-e20f9ca5edbb)
-drive link : https://drive.google.com/file/d/1k4DUwEWF0mimaQfvdbgeeYhpvT9_beeb/view?usp=sharing
+* Collects user input
+* Sends request to backend
+* Displays prediction result dynamically
+* Provides responsive and modern UI
+
+---
+
+# 📊 Dataset
+
+The model is trained using the Twitter Sentiment Analysis dataset containing 1.6 million tweets.
+
+Each record contains:
+
+* Sentiment label (0 = Negative, 4 = Positive)
+* Tweet text
+* Additional metadata (ID, date, user, etc.)
+
+For this project, only the **text** and **sentiment label** are used.
+
+This dataset provides large-scale real-world sentiment data, making the model robust and generalizable.
+
+---
+
+# 🧹 Text Preprocessing
+
+Raw tweets contain noise such as:
+
+* URLs
+* User mentions (@username)
+* Hashtags
+* Special characters
+* Emojis
+* Mixed casing
+
+To improve model performance, the following preprocessing steps are applied:
+
+* Convert text to lowercase
+* Remove URLs and mentions
+* Remove hashtags and special symbols
+* Tokenize text into words
+* Apply stemming to reduce words to root form
+
+Example transformation:
+
+“I am Loving this Product!!! 😍”
+→ “love product”
+
+This cleaning ensures consistent and meaningful input for the model.
+
+---
+
+# 🔢 Feature Engineering (TF-IDF)
+
+Machine learning models cannot directly understand text.
+Therefore, text must be converted into numerical form.
+
+This project uses **TF-IDF (Term Frequency – Inverse Document Frequency)**.
+
+TF-IDF:
+
+* Measures how important a word is in a document
+* Reduces the impact of very common words
+* Highlights unique and meaningful terms
+
+Both:
+
+* Single words (unigrams)
+* Two-word combinations (bigrams)
+
+are used to capture better context (e.g., “very good”, “not happy”).
+
+This improves classification accuracy significantly.
+
+---
+
+# 🤖 Model Development
+
+The algorithm used is:
+
+**Linear Support Vector Machine (Linear SVM)**
+
+Why SVM?
+
+* Performs very well on high-dimensional text data
+* Effective for binary classification
+* Works efficiently on large datasets
+* Provides strong generalization performance
+
+The dataset is split into:
+
+* 80% Training Data
+* 20% Testing Data
+
+Balanced class weighting is used to prevent bias toward any particular class.
+
+---
+
+# 📈 Model Evaluation
+
+Model performance is evaluated using:
+
+* Accuracy: 85%
+  
+These metrics ensure that the model performs well for both positive and negative sentiments.
+
+---
+
+# 💾 Model Saving
+
+After training, the following components are saved:
+
+* Trained SVM model
+* TF-IDF vectorizer
+
+Saving these allows:
+
+* Faster deployment
+* No need to retrain each time
+* Easy integration with backend API
+
+---
+
+# 🌐 Backend Development – Flask REST API
+
+The backend is built using Flask.
+
+Its responsibilities include:
+
+1. Loading the saved model and vectorizer
+2. Receiving user input via HTTP request
+3. Converting input text into TF-IDF vector format
+4. Running prediction using the trained model
+5. Returning sentiment result in JSON format
+
+The API uses the POST method because:
+
+* User input is sent to server
+* Text length may be large
+* Data should not appear in the URL
+* It follows REST API best practices for processing requests
+
+Backend Flow:
+
+User Input → API → Vectorization → Prediction → JSON Response
+
+---
+
+# ⚛️ Frontend Development – React
+
+The frontend is built using React.
+
+Its responsibilities include:
+
+* Providing a clean and interactive user interface
+* Collecting user input through a textarea
+* Sending asynchronous request to backend
+* Displaying prediction result dynamically
+* Showing loading state while prediction is in progress
+
+The interface is designed with:
+
+* Gradient background
+* Card-style layout
+* Responsive design
+* Clear prediction display
+
+---
+
+# 🔄 Complete System Flow
+
+Dataset
+↓
+Text Cleaning & Preprocessing
+↓
+TF-IDF Feature Extraction
+↓
+SVM Model Training
+↓
+Model Evaluation
+↓
+Model Saved
+↓
+Flask Backend Loads Model
+↓
+React Frontend Sends Input
+↓
+Backend Predicts Sentiment
+↓
+Result Displayed to User
+
+---
+
+# 📌 Technologies Used
+
+Machine Learning:
+
+* Scikit-learn
+* NLTK
+
+Backend:
+
+* Flask
+* Flask-CORS
+
+Frontend:
+
+* React
+* Axios
+
+Model Storage:
+
+* Joblib
+
+---
+
+# 🎯 Key Concepts Demonstrated
+
+This project demonstrates understanding of:
+
+* Natural Language Processing
+* Text vectorization techniques
+* Supervised machine learning
+* Support Vector Machines
+* REST API development
+* Frontend–backend communication
+* Full-stack application integration
+* Model deployment workflow
+
+---
+
+# 📊 Example
+
+Input:
+“I am very happy today”
+
+Output:
+Positive 😊
+
+---
+
+# 🚀 How to Run
+
+Backend:
+
+* Install required Python dependencies
+* Start Flask server
+
+Frontend:
+
+* Install Node dependencies
+* Start React development server
+
+Both must run simultaneously to enable full communication.
+
+---
+# 🏁 Conclusion
+
+This project demonstrates how to build a complete, production-style, end-to-end Machine Learning web application.
+
+It successfully integrates:
+
+* Data preprocessing
+* Feature engineering
+* Model training
+* REST API backend
+* Modern frontend interface
+# Sample Output
+<img width="1417" height="813" alt="image" src="https://github.com/user-attachments/assets/6d8f0f9a-cd24-4f32-aaa0-b5fffff2d346" />
+
